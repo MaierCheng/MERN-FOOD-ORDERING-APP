@@ -34,8 +34,15 @@ const UserProfileForm = ({
   isPending,
 }: Props) => {
   const form = useForm<UserFormData>({
-    resolver: zodResolver(formSchema),
-  });
+  resolver: zodResolver(formSchema),
+  defaultValues: {
+    email: "",
+    name: "",
+    addressLine1: "",
+    city: "",
+    country: "",
+  },
+});
 
   return (
     <Form {...form}>
