@@ -1,15 +1,19 @@
-import { useUpdateMyUser } from "@/api/MyUserApi";
+import { useGetMyUser, useUpdateMyUser } from "@/api/MyUserApi";
 import UserProfileForm from "@/forms/user-profile-form/UserProfileForm";
 
 
 const UserProfilePage = () => {
-  const { updateUser, isPending } = useUpdateMyUser();
+  const { currentUser, isPending: isGetPending } = useGetMyUser();
+  const { updateUser, isPending: isUpdatePending } = useUpdateMyUser();
 
+  if (isGetPending) {
+    return <span>Loading...</span>;
+  }
   return (
     <UserProfileForm
     //   currentUser={currentUser}
       onSave={updateUser}
-      isPending={isPending}
+      isPending={isUpdatePending}
     />
   );
 };
