@@ -9,9 +9,14 @@ const UserProfilePage = () => {
   if (isGetPending) {
     return <span>Loading...</span>;
   }
+
+  if (!currentUser) {
+    return <span>No user data found.</span>;
+  }
+  
   return (
     <UserProfileForm
-    //   currentUser={currentUser}
+      currentUser={currentUser}
       onSave={updateUser}
       isPending={isUpdatePending}
     />
