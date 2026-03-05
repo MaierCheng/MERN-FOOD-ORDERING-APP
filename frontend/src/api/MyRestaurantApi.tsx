@@ -1,9 +1,9 @@
 import type { Restaurant } from "@/types";
 import { useAuth0 } from "@auth0/auth0-react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-
+const queryClient = useQueryClient();
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const useGetMyRestaurant = () => {
@@ -106,6 +106,7 @@ export const useUpdateMyRestaurant = () => {
     mutationFn: updateRestaurantRequest,
     onSuccess: () => {
       toast.success("Restaurant updated");
+      queryClient.invalidateQueries({ queryKey: ["fetchMyRestaurant"] });
     },
     onError: () => {
       toast.error("Unable to update restaurant");
