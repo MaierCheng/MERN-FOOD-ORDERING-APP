@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import Restaurant, { MenuItemType } from "../models/restaurant";
 import { Request, Response } from "express";
 import { create } from "domain";
+import Order from "../models/Order";
 
 
 const STRIPE = new Stripe(process.env.STRIPE_API_KEY as string);
@@ -61,8 +62,8 @@ const createCheckoutSession = async (req: Request, res: Response) => {
       return res.status(500).json({ message: "Error creating stripe session" });
     }
 
-    // await newOrder.save();
-    // res.json({ url: session.url });
+    await newOrder.save();
+    res.json({ url: session.url });
 
   } catch (error: any) {
     console.log(error);

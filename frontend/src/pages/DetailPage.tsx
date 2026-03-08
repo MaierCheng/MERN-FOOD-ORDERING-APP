@@ -9,6 +9,7 @@ import { useParams } from "react-router-dom";
 import type { MenuItem as MenuItemType } from "../types";
 import CheckoutButton from "@/components/CheckoutButton";
 import type { UserFormData } from "@/forms/user-profile-form/UserProfileForm";
+import { useCreateCheckoutSession } from "@/api/OrderApi";
 
 export type CartItem = {
   _id: string;
@@ -20,6 +21,7 @@ export type CartItem = {
 const DetailPage = () => {
     const { restaurantId } = useParams();
     const { restaurant, isPending } = useGetRestaurant(restaurantId);
+    const {createCheckoutSession, isPending: isCheckoutPending} = useCreateCheckoutSession();
 
     const [cartItems, setCartItems] = useState<CartItem[]>(()=>{
       const storedCartItems = sessionStorage.getItem(`cartItems-${restaurantId}`);
@@ -77,7 +79,28 @@ const DetailPage = () => {
   };
 
   const onCheckout = async (userFormData: UserFormData) => {
-    console.log("userFormData", userFormData);
+     if (!restaurant) {
+      return;
+    }
+
+    const checkoutData = {
+      cartItems: cartItems.map((cartItem) => ({
+        menuItemId: cartItem._id,
+        name: cartItem.name,
+        quantity: cartItem.quantity.toString(),
+      })),
+      restaurantId: restaurant._id,
+      deliveryDetails: {
+        name: userFormData.name,
+        addressLine1: userFormData.addressLine1,
+        city: userFormData.city,
+        country: userFormData.country,
+        email: userFormData.email as string,
+      },
+    };
+
+    const data = await createCheckoutSession(checkoutData);
+    window.location.href = data.url;
   }
 
 
@@ -113,7 +136,7 @@ const DetailPage = () => {
               removeFromCart={removeFromCart}
             />
             <CardFooter>
-              <CheckoutButton disabled={cartItems.length === 0} onCheckout={onCheckout} />
+              <CheckoutButton disabled={cartItems.length === 0} onCheckout={onCheckout} isPending={isCheckoutPending} />
             </CardFooter>
           </Card>
         </div>
