@@ -113,7 +113,7 @@ const DetailPage = () => {
               removeFromCart={removeFromCart}
             />
             <CardFooter>
-              <CheckoutButton disabled={cartItems.length === 0} onCheckout={onCheckout}/>
+              <CheckoutButton disabled={cartItems.length === 0} onCheckout={onCheckout} />
             </CardFooter>
           </Card>
         </div>
