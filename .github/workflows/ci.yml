@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  AWS_REGION: us-east-2
+  S3_BUCKET: mern-food-ordering-app-frontend
+  CLOUDFRONT_DISTRIBUTION_ID: E2I9O51M4O8PZB
+
 jobs:
   backend:
     name: Backend Build
@@ -20,7 +25,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
@@ -31,7 +36,7 @@ jobs:
         run: npx tsc
 
   frontend:
-    name: Frontend Build
+    name: Frontend Build & Deploy
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -43,7 +48,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -53,9 +58,24 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Vite 构建需要这些环境变量，用占位值避免 build 失败
-          VITE_API_BASE_URL: http://localhost:7000
+          VITE_API_BASE_URL: https://mern-food-ordering-app-backend-prod.eba-pjhmwt5g.us-east-2.elasticbeanstalk.com
           VITE_AUTH0_DOMAIN: placeholder.auth0.com
           VITE_AUTH0_CLIENT_ID: placeholder
           VITE_AUTH0_CALLBACK_URL: http://localhost:5173
           VITE_AUTH0_AUDIENCE: placeholder
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: aws s3 sync dist/ s3://${{ env.S3_BUCKET }} --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
